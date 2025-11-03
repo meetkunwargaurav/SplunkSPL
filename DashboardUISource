@@ -1,0 +1,160 @@
+<form version="1.1" theme="light">
+  <label>Change_Management - Change Management Automation Dashboard | Population Coverage - MMM DD, YYYY, to Last Update Date (i.e., MMM DD, YYYY)</label>
+  <fieldset submitButton="false" autoRun="true">
+    <input type="dropdown" token="App_Filter" searchWhenChanged="true">
+      <label>Select Application / Infra</label>
+      <fieldForLabel>Configuration_Item</fieldForLabel>
+      <fieldForValue>Configuration_Item</fieldForValue>
+      <search>
+        <query>| inputlookup csvfile.csv 
+| dedup Configuration_Item</query>
+        <earliest>0</earliest>
+        <latest></latest>
+      </search>
+      <choice value="*">All</choice>
+      <initialValue>*</initialValue>
+      <default>*</default>
+    </input>
+  </fieldset>
+  <row>
+    <panel>
+      <title>Total # of Changes</title>
+      <single>
+        <search>
+          <query>| inputlookup csvfile.csv |search Configuration_Item="$App_Filter$" | stats DC(Task)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title>Total # of Applications / Infrastructure Devices using SNOW for Change Management</title>
+      <single>
+        <search>
+          <query>| inputlookup csvfile.csv 
+| stats DC(Configuration_Item)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title># of Normal Changes</title>
+      <single>
+        <search>
+          <query>| inputlookup csvfile.csv |search Configuration_Item="$App_Filter$" 
+| search Type=Normal
+| stats DC(Task)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title># of Emergency Changes</title>
+      <single>
+        <search>
+          <query>| inputlookup csvfile.csv |search Configuration_Item="$App_Filter$" 
+| search Type=Emergency | stats DC(Task)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+    <panel>
+      <title># of Standard Changes</title>
+      <single>
+        <search>
+          <query>| inputlookup csvfile.csv |search Configuration_Item="$App_Filter$" 
+| search Type=Standard 
+| stats DC(Task)</query>
+          <earliest>0</earliest>
+          <latest></latest>
+        </search>
+        <option name="drilldown">none</option>
+        <option name="refresh.display">progressbar</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Normal Changes</title>
+      <table>
+        <title>Normal Changes - CM Testing Sheet</title>
+        <search>
+          <query>| inputlookup csvfile.csv |search Configuration_Item="$App_Filter$" 
+| search Type=Normal 
+| stats values(Configuration_Item) as Configuration_Item values(Short description) as Short_Description values(Created) as Created_On values(Approval set) as Approved_On values(Closed) as Implemented_On values(Approval history) as "All_ApproverNames_with_Date_of_Approval" values(Assigned to) as Implementor values(Close notes) as Close_Notes by Task 
+|eval Approver_vs_Implementor_SOD_Maintained?=if (like(Approval_history,"%".Assigned_to."%"),"No","Yes")|eval Implemented_Post_Approval? = if(Closed &lt; Approval_set, "No", "Yes")| eval Test_Result=if (like(Approval_history,"%".Assigned_to."%"),"Failed",if(Closed &lt; Approval_set,"Failed","Passed"))</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Emergency Changes</title>
+      <table>
+        <title>Emergency Changes - CM0 Testing Sheet</title>
+        <search>
+          <query>| inputlookup csvfile.csv|search Configuration_Item="$App_Filter$" |search Type=Emergency|stats values(Configuration_Item) as Configuration_Item values(Short description) as Short_Description values(Created) as Created_On values(Approval set) as Approved_On values(Closed) as Implemented_On values(Approval history) as "All_ApproverNames_with_Date_of_Approval" values(Assigned to) as Implementor values(Close notes) as Close_Notes by Task|eval Implemented_Post_Approval? = if(Closed &lt; Approval_set, "No", "Yes")|eval Approver_vs_Implementor_SOD_Maintained?=if (like(Approval_history,"%".Assigned_to."%"),"No","Yes")|eval Test_Result=if (like(Approval_history,"%".Assigned_to."%"),"Failed",if(Closed &lt; Approval_set,"Failed","Passed"))</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">5</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>Standard Changes</title>
+      <table>
+        <title>Standard Changes - CM Testing Sheet</title>
+        <search>
+          <query>| inputlookup csvfile.csv |search Configuration_Item="$App_Filter$" 
+| search Type=Standard 
+| stats values(Configuration_Item) as Configuration_Item values(Short description) as Short_Description values(Created) as Created_On values(Closed) as Implemented_On values(Assigned to) as Implementor values(Approval history) as "Standard_Change_Approval_Notes_(If_Any)" values(Close notes) as "Closing_Notes" by Task</query>
+          <earliest>0</earliest>
+          <latest></latest>
+          <sampleRatio>1</sampleRatio>
+        </search>
+        <option name="count">25</option>
+        <option name="dataOverlayMode">none</option>
+        <option name="drilldown">none</option>
+        <option name="percentagesRow">false</option>
+        <option name="refresh.display">progressbar</option>
+        <option name="rowNumbers">true</option>
+        <option name="totalsRow">false</option>
+        <option name="wrap">true</option>
+      </table>
+    </panel>
+  </row>
+</form>
