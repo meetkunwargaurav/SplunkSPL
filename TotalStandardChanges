@@ -1,0 +1,3 @@
+| inputlookup csvfile.csv |search Configuration_Item="*" 
+| search Type=Standard 
+| stats DC(Task)
