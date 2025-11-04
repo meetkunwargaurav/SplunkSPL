@@ -1,0 +1,1 @@
+| inputlookup SOX_Change_Report_2022.csv |search Configuration_Item="*" | stats DC(Task)
