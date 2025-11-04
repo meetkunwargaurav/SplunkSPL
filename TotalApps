@@ -1,0 +1,2 @@
+| inputlookup csvfile.csv 
+| stats DC(Configuration_Item)
