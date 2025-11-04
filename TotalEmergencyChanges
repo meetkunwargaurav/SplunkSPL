@@ -1,0 +1,2 @@
+| inputlookup csvfile.csv |search Configuration_Item="*" 
+| search Type=Emergency | stats DC(Task)
